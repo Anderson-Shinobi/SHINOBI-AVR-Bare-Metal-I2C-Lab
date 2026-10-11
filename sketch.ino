@@ -97,17 +97,27 @@ bool ds1307_read_seconds(uint8_t& seconds) {
 }
 void probe_unused_address() {
   if (!twi_start(kSTART)) {
+    // Release the bus BEFORE potentially slow UART formatting.
+    const bool stop_ok = twi_stop();
     uart_text("probe START failed\r\n");
-    if (!twi_stop()) uart_text("probe STOP_TIMEOUT\r\n");
+    if (!stop_ok) uart_text("probe STOP_TIMEOUT\r\n");
     return;
   }
   TWDR = static_cast<uint8_t>(0x69 << 1);
   TWCR = _BV(TWINT) | _BV(TWEN);
-  if (twi_wait()) {
-    uart_text("probe 0x69 status=0x"); uart_hex(twi_status());
-    uart_text(twi_status() == kSLA_W_NACK ? " EXPECTED_ADDRESS_NACK\r\n" : " CHECK_BUS\r\n");
-  } else { uart_text("probe timeout\r\n"); }
-  if (!twi_stop()) uart_text("probe STOP_TIMEOUT\r\n");
+  const bool completed = twi_wait();
+  // Snapshot TWSR before STOP may change the last peripheral status.
+  const uint8_t status = completed ? twi_status() : 0xFF;
+  // The previous VCD showed ~47.77ms SCL LOW because UART was sent
+  // before STOP. Close the TWI transaction before writing diagnostics.
+  const bool stop_ok = twi_stop();
+  if (completed) {
+    uart_text("probe 0x69 status=0x"); uart_hex(status);
+    uart_text(status == kSLA_W_NACK ? " EXPECTED_ADDRESS_NACK\r\n" : " CHECK_BUS\r\n");
+  } else {
+    uart_text("probe timeout\r\n");
+  }
+  if (!stop_ok) uart_text("probe STOP_TIMEOUT\r\n");
 }
 }
 
