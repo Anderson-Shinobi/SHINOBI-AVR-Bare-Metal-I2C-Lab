@@ -80,6 +80,6 @@ Reviewing the committed `probe_unused_address()` firmware shows it obtains the N
 | UART Serial Monitor `READ_PASS` and `EXPECTED_ADDRESS_NACK` | **NOT CHECKED — UART log not supplied** |
 | Physical Uno/DS1307 or analog waveforms | **NOT TESTED** |
 
-The [VCD regression decoder](../tests/test_i2c_vcd.py) reproduces the byte-level findings and documents the long clock-low interval. This source-backed, measured report is narrower than full I²C electrical compliance or physical-hardware validation.
+The [VCD regression decoder](../tests/test_i2c_vcd.py) reproduces the byte-level findings and documents the long clock-low interval. **Follow-up now completed:** a separate [post-fix VCD report](I2C_POSTFIX_VCD_VALIDATION.md) demonstrates the probe duration fell from ~47.87 ms to 108.875 µs after the STOP-before-UART change, while protocol frames continued to pass. This document and its original VCD remain the immutable *pre-fix* baseline. This source-backed, measured report is narrower than full I²C electrical compliance or physical-hardware validation.
 
 **SHINOBI Engineering — From Physics to Firmware. Don't just write drivers. Measure the bus.**
