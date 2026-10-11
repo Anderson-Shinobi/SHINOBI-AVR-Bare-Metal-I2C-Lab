@@ -12,12 +12,16 @@ Hardware TWI master; TWBR/TWSR/TWCR/TWDR; 100 kHz at 16 MHz MCU; DS1307 RTC slav
 
 ## Run in Wokwi
 
+**[▶ Open the author's saved I²C/TWI laboratory in Wokwi](https://wokwi.com/projects/477548989078745089)**
+
+The author has provided the saved-project URL. **VCD waveform inspection, Serial Monitor output and physical Uno validation are still pending.** The public link by itself does not prove I²C timing or ACK/NACK behavior. Wokwi projects can be edited independently of the GitHub source; use this repository as the firmware/circuit reference.
+
 See the full [LAB 03 Wokwi protocol and measurement checklist](docs/WOKWI_VALIDATION.md) before claiming any signal or protocol validation.
 
-1. Open [Wokwi Arduino Uno](https://wokwi.com/projects/new/arduino-uno).
-2. Replace **sketch.ino** and **diagram.json** in that project with the same files from this repository.
-3. Start the simulation; inspect the serial monitor and the logic analyzer.
-4. Stop and download the **VCD** capture. Send the VCD for quantitative timing and protocol decoding.
+1. Open the [saved I²C/TWI Wokwi project](https://wokwi.com/projects/477548989078745089) and confirm its `sketch.ino` and `diagram.json` match the current repository revisions.
+2. Start the simulation; inspect the Serial Monitor and the logic analyzer.
+3. Run for at least 5 seconds, then press **Stop** to export the **VCD** capture.
+4. Send the VCD and the Serial Monitor output for quantitative timing and protocol decoding.
 5. Keep captured, measured and calculated results separate in the report.
 
 Wiring: A4=SDA to DS1307 SDA and analyzer D0; A5=SCL to DS1307 SCL and analyzer D1; 5V→RTC VCC and SDA/SCL through separate 4.7 kΩ pull-ups; shared GND. **Target UART** (not yet measured in Wokwi): DS1307 seconds … READ_PASS and probe 0x69 … EXPECTED_ADDRESS_NACK. The new `twi_stop()` waits for `TWSTO` to clear before the following START; a timeout is reported if STOP does not complete.
@@ -48,6 +52,6 @@ python3 -m unittest discover -s tests -v
 
 ## Roadmap
 
-**Next:** run Wokwi → collect UART output and VCD → decode START/repeated START/ACK/NACK/STOP and measure SCL → repeat on an actual Arduino Uno → compare traces.
+**Next:** execute saved Wokwi project → collect UART output and VCD → decode START/repeated START/ACK/NACK/STOP and measure SCL → repeat on an actual Arduino Uno → compare traces.
 
 **SHINOBI Engineering — Don't just write drivers. Measure the bus.**
