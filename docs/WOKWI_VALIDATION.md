@@ -6,8 +6,10 @@
 
 ## How to run
 
-1. Open a [new Wokwi Arduino Uno project](https://wokwi.com/projects/new/arduino-uno). Keep the SPI LAB 02 project untouched.
-2. Paste the repository's [sketch.ino](../sketch.ino) into Wokwi `sketch.ino` and [diagram.json](../diagram.json) into Wokwi `diagram.json`. Save as **SHINOBI AVR Bare-Metal I2C TWI Lab**.
+**[Open the author's saved LAB 03 I²C/TWI project](https://wokwi.com/projects/477548989078745089).** Its URL has been provided; its waveforms have **not yet** been inspected or validated.
+
+1. Open the [saved Wokwi project](https://wokwi.com/projects/477548989078745089). Keep the SPI LAB 02 project untouched.
+2. Confirm the saved `sketch.ino` and `diagram.json` correspond to the current repository [firmware](../sketch.ino) and [circuit](../diagram.json). If they differ, update or create a copy rather than assuming the saved project uses the latest code.
 3. Confirm `wokwi-ds1307` is visible with SDA on **A4** and SCL on **A5**, 5V, shared GND, and the logic analyzer connected **D0=SDA**, **D1=SCL**. The two 4.7 kΩ pull-up resistors must connect each bus line to 5V.
 4. Run for at least **5 seconds** and check the serial monitor. Look for `READ_PASS` and `EXPECTED_ADDRESS_NACK` but **do not assert them until observed**.
 5. Press **Stop** to generate the analyzer capture `shinobi-i2c-ds1307.vcd`. Save and upload the VCD (and optionally a screenshot or copy of Serial Monitor).
@@ -58,7 +60,7 @@ The original sketch did not wait for STOP to finish before sending the next STAR
 
 ## Expected evidence
 
-- Public Wokwi project URL (user saves the circuit).
+- Public Wokwi project URL (received): [LAB 03 saved simulation](https://wokwi.com/projects/477548989078745089).
 - Original VCD without editing.
 - UART Serial Monitor output.
 - Reproducible decoding report (timestamps and address ACK/NACK).
