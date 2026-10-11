@@ -2,7 +2,7 @@
 
 **From Physics to Firmware | Arduino Uno R3 / ATmega328P | MIT License**
 
-> **Status:** AVR-GCC build and static checks PASS. **First Wokwi VCD protocol measurement PASS:** five DS1307 reads, correct repeated START/ACK/NACK/STOP, five expected address NACKs and 100 kHz measured SCL within active bursts. **Issue found:** ~47.77 ms SCL-low hold during the absent-address probe, associated with UART logging before STOP. Physical Uno and UART transcript remain untested.
+> **Status:** AVR-GCC build and static checks PASS. **First Wokwi VCD protocol measurement PASS:** five DS1307 reads, correct repeated START/ACK/NACK/STOP, five expected address NACKs and 100 kHz measured SCL within active bursts. **Pre-fix VCD issue:** ~47.77 ms SCL-low hold during the absent-address probe, associated with UART logging before STOP. **Source updated:** STOP now completes before UART logging; a new VCD is required to verify the fix. Physical Uno and UART transcript remain untested.
 
 This is an **independent repository** linked from the [SHINOBI Engineering portfolio](https://anderson-shinobi.github.io/). The firmware uses AVR peripheral registers directly; `setup()` and `loop()` are invoked by Wokwi's standard Arduino start-up scaffold. No `SPI.h`, `Wire.h`, `Serial`, or Arduino high-level pin APIs are used.
 
@@ -33,7 +33,7 @@ Wiring: A4=SDA to DS1307 SDA and analyzer D0; A5=SCL to DS1307 SCL and analyzer 
 - [Executable VCD regression tests](tests/test_i2c_vcd.py)
 - **Observed:** all five full DS1307 reads `0xD0 ACK → 0x00 ACK → repeated START → 0xD1 ACK → seconds NACK → STOP`, followed by address probe `0xD2 NACK → STOP`.
 - **Measured:** SCL **100 kHz** inside active byte-clock bursts; returned seconds 00–04 BCD.
-- **Identified timing issue:** probe holds SCL LOW for **~47.77 ms** before STOP. Source inspection suggests formatting and writing UART diagnostics before issuing STOP. See report; address this separately and **re-capture** before claiming the revised firmware was measured.
+- **Identified in original VCD:** probe held SCL LOW for **~47.77 ms** before STOP. The committed firmware has since been modified to snapshot `TWSR`, issue and await STOP, and **only then** print the UART status. **The correction is not yet waveform-validated.** Run the saved Wokwi project using the latest GitHub firmware and export a fresh VCD.
 
 ## Measurement acceptance criteria
 
@@ -61,6 +61,6 @@ python3 -m unittest discover -s tests -v
 
 ## Roadmap
 
-**Next:** execute saved Wokwi project → collect UART output and VCD → decode START/repeated START/ACK/NACK/STOP and measure SCL → repeat on an actual Arduino Uno → compare traces.
+**Next:** synchronize updated `sketch.ino` to Wokwi → execute again → export **post-fix VCD** to confirm the ~47.77-ms probe hold disappears, and retain the original as baseline → then compare on an actual Arduino Uno.
 
 **SHINOBI Engineering — Don't just write drivers. Measure the bus.**
