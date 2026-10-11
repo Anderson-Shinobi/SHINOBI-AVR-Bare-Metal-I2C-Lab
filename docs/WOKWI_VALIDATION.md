@@ -2,7 +2,7 @@
 
 **Hardware under test:** Arduino Uno R3 / ATmega328P 16 MHz, integrated TWI controller (no Wire/Arduino API), DS1307 RTC at 7-bit address `0x68`, two independent 4.7 kΩ pull-ups to +5 V, logic analyzer on SDA and SCL.
 
-**Status:** firmware checked by AVR-GCC and structural tests; **Wokwi VCD validation not yet performed**. This is a planned experiment, not a claim of observed protocol success.
+**Status:** firmware compiled by AVR-GCC and a [first original Wokwi VCD](../evidence/I2C_VCD_VALIDATION.md) decoded. Protocol frames and 100 kHz active SCL measured in Wokwi. A ~47.77-ms SCL-low hold was detected on the unused-address probe; follow-up remediation has not yet been measured. Serial Monitor text and physical hardware are still pending.
 
 ## How to run
 
@@ -49,13 +49,13 @@ The original sketch did not wait for STOP to finish before sending the next STAR
 ## Validation acceptance checklist
 
 - [ ] Wokwi schematic loads without invalid pin/wiring warnings.
-- [ ] Repeated START is visible without an intervening STOP.
-- [ ] DS1307 acknowledges `0xD0`, `0x00`, and `0xD1`.
-- [ ] Final seconds byte is followed by a master NACK, then STOP.
-- [ ] New `0xD2` probe occurs only after the prior STOP and receives NACK.
+- [x] Repeated START is visible without an intervening STOP (first VCD).
+- [x] DS1307 acknowledges `0xD0`, `0x00`, and `0xD1` (first VCD).
+- [x] Final seconds byte is followed by a master NACK, then STOP (first VCD).
+- [x] New `0xD2` probe occurs only after the prior STOP and receives NACK (first VCD).
 - [ ] Serial Monitor reports `READ_PASS` and `EXPECTED_ADDRESS_NACK`.
-- [ ] Measured SCL rate and timing intervals are documented from the actual VCD.
-- [ ] Abnormal cases and any simulator limitations are described separately.
+- [x] Active-burst SCL median period 10 µs and extended probe SCL-low hold 47.77 ms documented from VCD.
+- [x] First abnormal observation reported: probe retains SCL LOW for ~47.77 ms while UART output occurs before STOP, based on firmware sequence.
 - [ ] Hardware behavior remains **untested on a physical board**.
 
 ## Expected evidence
