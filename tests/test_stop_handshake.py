@@ -34,8 +34,16 @@ class TestTwiStop(unittest.TestCase):
         self.assertIn("return ok && stop_ok;", read)
 
         probe = self.code.split("void probe_unused_address() {", 1)[1].split("void setup()", 1)[0]
-        self.assertIn("if (!twi_stop()) uart_text(\"probe STOP_TIMEOUT", probe)
+        self.assertIn("const bool stop_ok = twi_stop();", probe)
+        self.assertIn('if (!stop_ok) uart_text("probe STOP_TIMEOUT', probe)
         self.assertIn("0x69 << 1", probe)
+        # Capture the completed state and TWSR code BEFORE issuing STOP.
+        self.assertIn("const bool completed = twi_wait();", probe)
+        self.assertIn("const uint8_t status = completed ? twi_status() : 0xFF;", probe)
+        self.assertLess(probe.index("const uint8_t status"),
+                        probe.rindex("const bool stop_ok = twi_stop();"))
+        self.assertLess(probe.rindex("const bool stop_ok = twi_stop();"),
+                        probe.index('uart_text("probe 0x69 status=0x")'))
 
     def test_rtc_address_and_clock_unchanged(self):
         self.assertIn("kDs1307Address = 0x68", self.code)
