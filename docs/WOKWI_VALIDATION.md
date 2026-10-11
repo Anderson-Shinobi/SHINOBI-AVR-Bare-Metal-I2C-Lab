@@ -2,11 +2,11 @@
 
 **Hardware under test:** Arduino Uno R3 / ATmega328P 16 MHz, integrated TWI controller (no Wire/Arduino API), DS1307 RTC at 7-bit address `0x68`, two independent 4.7 kΩ pull-ups to +5 V, logic analyzer on SDA and SCL.
 
-**Status:** firmware compiled by AVR-GCC and a [first original Wokwi VCD](../evidence/I2C_VCD_VALIDATION.md) decoded. Protocol frames and 100 kHz active SCL measured in Wokwi. A ~47.77-ms SCL-low hold was detected on the unused-address probe; follow-up remediation has not yet been measured. Serial Monitor text and physical hardware are still pending.
+**Status:** compiled by AVR-GCC; both [baseline](../evidence/I2C_VCD_VALIDATION.md) and [post-fix](../evidence/I2C_POSTFIX_VCD_VALIDATION.md) Wokwi VCDs decoded. Protocol frames and active 100 kHz SCL measured; the baseline ~47.77-ms SCL-low hold is absent in the post-fix trace, where the address probe takes only 108.875 µs. UART Serial Monitor output and physical hardware are still pending.
 
 ## How to run
 
-**[Open the author's saved LAB 03 I²C/TWI project](https://wokwi.com/projects/477548989078745089).** Its URL has been provided; its waveforms have **not yet** been inspected or validated.
+**[Open the author's saved LAB 03 I²C/TWI project](https://wokwi.com/projects/477548989078745089).** Two captured versions have now been measured and documented. If you edit the simulation, verify its firmware revision before comparing new measurements.
 
 1. Open the [saved Wokwi project](https://wokwi.com/projects/477548989078745089). Keep the SPI LAB 02 project untouched.
 2. Confirm the saved `sketch.ino` and `diagram.json` correspond to the current repository [firmware](../sketch.ino) and [circuit](../diagram.json). If they differ, update or create a copy rather than assuming the saved project uses the latest code.
@@ -54,14 +54,14 @@ The original sketch did not wait for STOP to finish before sending the next STAR
 - [x] Final seconds byte is followed by a master NACK, then STOP (first VCD).
 - [x] New `0xD2` probe occurs only after the prior STOP and receives NACK (first VCD).
 - [ ] Serial Monitor reports `READ_PASS` and `EXPECTED_ADDRESS_NACK`.
-- [x] Active-burst SCL median period 10 µs and extended probe SCL-low hold 47.77 ms documented from VCD.
-- [x] First abnormal observation reported: probe retains SCL LOW for ~47.77 ms while UART output occurs before STOP, based on firmware sequence.
+- [x] Active SCL median period 10 µs (100 kHz) in both VCDs; the original probe's ~47.77-ms SCL-low hold disappears in the post-fix VCD (no LOW period over 1 ms).
+- [x] Original abnormal observation and source diagnosis documented; post-fix source now issues STOP before UART, and the measured probe START→STOP interval fell to 108.875 µs.
 - [ ] Hardware behavior remains **untested on a physical board**.
 
 ## Expected evidence
 
 - Public Wokwi project URL (received): [LAB 03 saved simulation](https://wokwi.com/projects/477548989078745089).
-- Original VCD without editing.
+- Both original pre-fix and post-fix VCDs preserved without editing, with SHA-256 hashes.
 - UART Serial Monitor output.
 - Reproducible decoding report (timestamps and address ACK/NACK).
 - Later, physical Arduino Uno and actual DS1307 testing.
