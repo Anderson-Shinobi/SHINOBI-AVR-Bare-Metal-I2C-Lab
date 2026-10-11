@@ -2,7 +2,7 @@
 
 **From Physics to Firmware | Arduino Uno R3 / ATmega328P | MIT License**
 
-> **Status:** AVR-GCC compilation and static checks are automated in GitHub Actions. A bounded STOP-completion handshake was added before reusing the TWI bus. **Wokwi run/VCD capture and physical Uno validation are still pending.**
+> **Status:** AVR-GCC build and static checks PASS. **First Wokwi VCD protocol measurement PASS:** five DS1307 reads, correct repeated START/ACK/NACK/STOP, five expected address NACKs and 100 kHz measured SCL within active bursts. **Issue found:** ~47.77 ms SCL-low hold during the absent-address probe, associated with UART logging before STOP. Physical Uno and UART transcript remain untested.
 
 This is an **independent repository** linked from the [SHINOBI Engineering portfolio](https://anderson-shinobi.github.io/). The firmware uses AVR peripheral registers directly; `setup()` and `loop()` are invoked by Wokwi's standard Arduino start-up scaffold. No `SPI.h`, `Wire.h`, `Serial`, or Arduino high-level pin APIs are used.
 
@@ -14,7 +14,7 @@ Hardware TWI master; TWBR/TWSR/TWCR/TWDR; 100 kHz at 16 MHz MCU; DS1307 RTC slav
 
 **[▶ Open the author's saved I²C/TWI laboratory in Wokwi](https://wokwi.com/projects/477548989078745089)**
 
-The author has provided the saved-project URL. **VCD waveform inspection, Serial Monitor output and physical Uno validation are still pending.** The public link by itself does not prove I²C timing or ACK/NACK behavior. Wokwi projects can be edited independently of the GitHub source; use this repository as the firmware/circuit reference.
+The saved Wokwi project has now yielded a measurable SDA/SCL capture with protocol-level evidence. **Physical Uno validation and the UART transcript remain pending.** Wokwi projects can be edited independently of the GitHub source; compare the saved sketch against the version used for each VCD before reproducing measurements.
 
 See the full [LAB 03 Wokwi protocol and measurement checklist](docs/WOKWI_VALIDATION.md) before claiming any signal or protocol validation.
 
@@ -25,6 +25,15 @@ See the full [LAB 03 Wokwi protocol and measurement checklist](docs/WOKWI_VALIDA
 5. Keep captured, measured and calculated results separate in the report.
 
 Wiring: A4=SDA to DS1307 SDA and analyzer D0; A5=SCL to DS1307 SCL and analyzer D1; 5V→RTC VCC and SDA/SCL through separate 4.7 kΩ pull-ups; shared GND. **Target UART** (not yet measured in Wokwi): DS1307 seconds … READ_PASS and probe 0x69 … EXPECTED_ADDRESS_NACK. The new `twi_stop()` waits for `TWSTO` to clear before the following START; a timeout is reported if STOP does not complete.
+
+## First measured Wokwi capture
+
+- [Logic analyzer report — first I²C VCD](evidence/I2C_VCD_VALIDATION.md)
+- [Original VCD archived](evidence/shinobi-i2c-ds1307-2026-10-11.vcd)
+- [Executable VCD regression tests](tests/test_i2c_vcd.py)
+- **Observed:** all five full DS1307 reads `0xD0 ACK → 0x00 ACK → repeated START → 0xD1 ACK → seconds NACK → STOP`, followed by address probe `0xD2 NACK → STOP`.
+- **Measured:** SCL **100 kHz** inside active byte-clock bursts; returned seconds 00–04 BCD.
+- **Identified timing issue:** probe holds SCL LOW for **~47.77 ms** before STOP. Source inspection suggests formatting and writing UART diagnostics before issuing STOP. See report; address this separately and **re-capture** before claiming the revised firmware was measured.
 
 ## Measurement acceptance criteria
 
