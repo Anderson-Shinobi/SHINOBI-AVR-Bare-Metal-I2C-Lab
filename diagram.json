@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "author": "SHINOBI Engineering",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-arduino-uno",
+      "id": "uno",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-ds1307",
+      "id": "rtc1",
+      "top": 20,
+      "left": 410,
+      "attrs": {
+        "initTime": "0"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rSDA",
+      "top": -145,
+      "left": 255,
+      "attrs": {
+        "value": "4700"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rSCL",
+      "top": -145,
+      "left": 330,
+      "attrs": {
+        "value": "4700"
+      }
+    },
+    {
+      "type": "wokwi-logic-analyzer",
+      "id": "logic1",
+      "top": 270,
+      "left": 380,
+      "attrs": {
+        "channelNames": "SDA,SCL,D2,D3,D4,D5,D6,D7",
+        "bufferSize": "100000",
+        "filename": "shinobi-i2c-ds1307"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "uno:A4",
+      "rtc1:SDA",
+      "green",
+      []
+    ],
+    [
+      "uno:A5",
+      "rtc1:SCL",
+      "yellow",
+      []
+    ],
+    [
+      "uno:5V",
+      "rtc1:5V",
+      "red",
+      []
+    ],
+    [
+      "uno:GND.2",
+      "rtc1:GND",
+      "black",
+      []
+    ],
+    [
+      "uno:A4",
+      "logic1:D0",
+      "green",
+      []
+    ],
+    [
+      "uno:A5",
+      "logic1:D1",
+      "yellow",
+      []
+    ],
+    [
+      "uno:GND.3",
+      "logic1:GND",
+      "black",
+      []
+    ],
+    [
+      "uno:5V",
+      "rSDA:1",
+      "red",
+      []
+    ],
+    [
+      "rSDA:2",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "uno:5V",
+      "rSCL:1",
+      "red",
+      []
+    ],
+    [
+      "rSCL:2",
+      "uno:A5",
+      "yellow",
+      []
+    ]
+  ],
+  "serialMonitor": {
+    "display": "auto",
+    "newline": "lf"
+  }
+}
