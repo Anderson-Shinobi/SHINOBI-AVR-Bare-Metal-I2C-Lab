@@ -56,7 +56,16 @@ bool twi_wait() {
   }
   return false;
 }
+// STOP is asynchronous. TWSTO returns to zero when the bus STOP completes.
+bool twi_wait_stop_completion() {
+  for (uint16_t n = 0; n < kTwiPollLimit; ++n) {
+    if (!(TWCR & _BV(TWSTO))) return true;
+  }
+  return false;
+}
 bool twi_start(uint8_t expected) {
+  // Never overwrite TWCR with a new START while a prior STOP is pending.
+  if (!twi_wait_stop_completion()) return false;
   TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN);
   return twi_wait() && twi_status() == expected;
 }
@@ -71,8 +80,9 @@ bool twi_read_nack(uint8_t& output) {
   output = TWDR;
   return true;
 }
-void twi_stop() {
+bool twi_stop() {
   TWCR = _BV(TWINT) | _BV(TWEN) | _BV(TWSTO);
+  return twi_wait_stop_completion();
 }
 bool ds1307_read_seconds(uint8_t& seconds) {
   bool ok = twi_start(kSTART);
@@ -81,18 +91,23 @@ bool ds1307_read_seconds(uint8_t& seconds) {
   if (ok) ok = twi_start(kREPEATED_START);
   if (ok) ok = twi_write(static_cast<uint8_t>((kDs1307Address << 1) | 1), kSLA_R_ACK);
   if (ok) ok = twi_read_nack(seconds);
-  twi_stop();
-  return ok;
+  const bool stop_ok = twi_stop();
+  if (!stop_ok) uart_text("DS1307 STOP_TIMEOUT\r\n");
+  return ok && stop_ok;
 }
 void probe_unused_address() {
-  if (!twi_start(kSTART)) { uart_text("probe START failed\r\n"); twi_stop(); return; }
+  if (!twi_start(kSTART)) {
+    uart_text("probe START failed\r\n");
+    if (!twi_stop()) uart_text("probe STOP_TIMEOUT\r\n");
+    return;
+  }
   TWDR = static_cast<uint8_t>(0x69 << 1);
   TWCR = _BV(TWINT) | _BV(TWEN);
   if (twi_wait()) {
     uart_text("probe 0x69 status=0x"); uart_hex(twi_status());
     uart_text(twi_status() == kSLA_W_NACK ? " EXPECTED_ADDRESS_NACK\r\n" : " CHECK_BUS\r\n");
   } else { uart_text("probe timeout\r\n"); }
-  twi_stop();
+  if (!twi_stop()) uart_text("probe STOP_TIMEOUT\r\n");
 }
 }
 
